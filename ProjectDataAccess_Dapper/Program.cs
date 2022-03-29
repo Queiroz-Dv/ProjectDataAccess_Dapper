@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using ProjectDataAccess_Dapper.Models;
 using System;
+using System.Data;
 using System.Data.SqlClient;
 
 namespace ProjectDataAccess_Dapper
@@ -13,7 +14,8 @@ namespace ProjectDataAccess_Dapper
 
             using (var connection = new SqlConnection(connectionString))
             {
-                CreateManyCategory(connection);
+                ExecuteProcedure(connection);
+                //CreateManyCategory(connection);
                 //DeleteCategory(connection);
                 //UpdateCategory(connection);
                 ListCategories(connection);
@@ -149,6 +151,17 @@ namespace ProjectDataAccess_Dapper
             });
 
             Console.WriteLine($"{rows} registros atualizados");
+        }
+
+        static void ExecuteProcedure(SqlConnection connection)
+        {
+            var proc = "[spDeleteStudent]";
+            var pars = new { StudentId = "79B82071-80A8-4E78-A79C-92C8CD1FD052" };
+            var rows = connection.Execute(proc,
+                  pars,
+                  commandType: CommandType.StoredProcedure);
+
+            Console.WriteLine($"{rows} linhas afetadas");
         }
     }
 
