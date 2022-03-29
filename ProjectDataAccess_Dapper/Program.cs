@@ -1,8 +1,10 @@
 ﻿using Dapper;
 using ProjectDataAccess_Dapper.Models;
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Linq;
 
 namespace ProjectDataAccess_Dapper
 {
@@ -14,6 +16,11 @@ namespace ProjectDataAccess_Dapper
 
             using (var connection = new SqlConnection(connectionString))
             {
+                // Like(connection, "api");
+                // SelectIn(connection);
+                // QueryMultiple(connection);
+                // OneToMany(connection);
+                // OneToOne(connection);
                 // ReadView(connection);
                 // ExecuteScalar(connection);
                 // ExecuteReadProcedure(connection);
@@ -237,7 +244,7 @@ namespace ProjectDataAccess_Dapper
                            [Course] ON [CareerItem].[CouseId] = [Course].[Id]";
 
             var items = connection.Query<CareerItem, Course, CareerItem>(sql,
-                (careerItem, course)=>
+                (careerItem, course) =>
                 {
                     careerItem.Course = course;
                     return careerItem;
@@ -245,7 +252,149 @@ namespace ProjectDataAccess_Dapper
 
             foreach (var item in items)
             {
-                Console.WriteLine($"{item.Title} - Curso: {item.Course.Title}"); 
+                Console.WriteLine($"{item.Title} - Curso: {item.Course.Title}");
+            }
+        }
+
+        static void OneToMany(SqlConnection connection)
+        {
+            var sql = @"SELECT
+                    [Career].[Id],
+                    [Career].[Title],
+                    [CareerItem].[CareerId] AS [Id],
+                    [CareerItem].[Title]
+                    FROM
+	                    [Career]
+                    INNER JOIN
+	                    [CareerItem] ON [CareerItem].[CareerId] = [Career].[Id]
+                    ORDER BY 
+	                    [Career].[Title]";
+
+            var careers = new List<Career>();
+            var items = connection.Query<Career, CareerItem, Career>(sql,
+                (career, item) =>
+                {
+                    var car = careers.Where(x => x.Id == career.Id).FirstOrDefault();
+                    if (car == null) // Se não existe na lista 
+                    {
+                        car = career;
+                        car.Items.Add(item);
+                        careers.Add(car);
+                    }
+                    else
+                    {
+                        career.Items.Add(item);
+                    }
+                    return career;
+                }, splitOn: "[CareerId]");
+
+            foreach (var career in careers)
+            {
+                Console.WriteLine($"{career.Title}");
+
+                foreach (var item in career.Items)
+                {
+                    Console.WriteLine($" - {item.Title}");
+                }
+            }
+        }
+
+        static void QueryMultiple(SqlConnection connection)
+        {
+            var query = "SELECT * FROM [Category]; SELECT * FROM [Course]";
+
+            using (var mult = connection.QueryMultiple(query))
+            {
+                var categories = mult.Read<Category>();
+                var courses = mult.Read<Course>();
+
+                foreach (var item in categories)
+                {
+                    Console.WriteLine(item.Title);
+                }
+                foreach (var item in courses)
+                {
+                    Console.WriteLine(item.Title);
+                }
+            }
+        }
+
+        static void SelectIn(SqlConnection connection)
+        {
+            var query = @"SELECT TOP 10 * FROM Career WHERE [Id] IN @Id";
+
+            var items = connection.Query<Career>(query, new
+            {
+                Id = new[]
+
+                 {
+                    "01AE8A85-B4E8-4194-A0F1-1C6190AF54CB",
+                    "4327AC7E-963B-4893-9F31-9A3B28A4E72B"
+
+                }
+            });
+
+            foreach (var item in items)
+            {
+                Console.WriteLine(item.Title);
+                Console.ReadKey();
+            }
+        }
+
+        static void Like(SqlConnection connection, string term)
+        {
+            var query = @"SELECT * FROM [Course] WHERE [Title] LIKE @exp";
+
+            var items = connection.Query<Course>(query, new
+            {
+               exp = $"%{term}%"
+            });
+
+            foreach (var item in items)
+            {
+                Console.WriteLine(item.Title);
+                Console.ReadKey();
+            }
+        }
+
+        static void Transaction(SqlConnection connection)
+        {
+            var category = new Category();
+            category.Id = Guid.NewGuid();
+            category.Title = "Ios as";
+            category.Url = "IosAs";
+            category.Summary = "Ios Cloud";
+            category.Order = 8;
+            category.Description = "Categoria para o iOS";
+            category.Featured = false;
+
+            var insertSql = @"INSERT INTO 
+                                    [CATEGORY] 
+                             VALUES(
+                                   @Id, 
+                                    @Title, 
+                                    @Url, 
+                                    @Summary,
+                                    @Order,
+                                    @Description,
+                                    @Featured)";
+
+            using (var transaction = connection.BeginTransaction())
+            {
+
+                var rows = connection.Execute(insertSql, new
+                {
+                    category.Id,
+                    category.Title,
+                    category.Url,
+                    category.Summary,
+                    category.Order,
+                    category.Description,
+                    category.Featured,
+                }, transaction);
+                //transaction.Commit();
+                transaction.Rollback();
+            Console.WriteLine($"{rows} linhas afetadas");
             }
         }
     }
