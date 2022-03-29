@@ -13,7 +13,9 @@ namespace ProjectDataAccess_Dapper
 
             using (var connection = new SqlConnection(connectionString))
             {
-                UpdateCategory(connection);
+                CreateManyCategory(connection);
+                //DeleteCategory(connection);
+                //UpdateCategory(connection);
                 ListCategories(connection);
                 //CreateCategory(connection);
             }
@@ -29,6 +31,63 @@ namespace ProjectDataAccess_Dapper
                 Console.WriteLine($"{item.Id} - {item.Title}");
                 Console.ReadKey();
             }
+            Console.ReadKey();
+        }
+
+        static void CreateManyCategory(SqlConnection connection)
+        {
+            var category1 = new Category();
+            category1.Id = Guid.NewGuid();
+            category1.Title = "Csharp Master";
+            category1.Url = "sharp";
+            category1.Summary = "Sharp pLUS";
+            category1.Order = 8;
+            category1.Description = "Categoria para Csharp Master Plus";
+            category1.Featured = false;
+
+            var category2 = new Category();
+            category2.Id = Guid.NewGuid();
+            category2.Title = "Azure Premium";
+            category2.Url = "azure";
+            category2.Summary = "Azure Cloud Computing";
+            category2.Order = 8;
+            category2.Description = "Categoria para o Azure Premium Cloud";
+            category2.Featured = false;
+
+            var insertSql = @"INSERT INTO 
+                                    [CATEGORY] 
+                             VALUES(
+                                   @Id, 
+                                    @Title, 
+                                    @Url, 
+                                    @Summary,
+                                    @Order,
+                                    @Description,
+                                    @Featured)";
+
+            //Retorna só um int que é a quantidade de linhas afetadas
+            var rows = connection.Execute(insertSql, new[]
+            {
+                new {
+                category1.Id,
+                category1.Title,
+                category1.Url,
+                category1.Summary,
+                category1.Order,
+                category1.Description,
+                category1.Featured,
+            },
+                 new {
+                category2.Id,
+                category2.Title,
+                category2.Url,
+                category2.Summary,
+                category2.Order,
+                category2.Description,
+                category2.Featured,
+            }
+            });
+            Console.WriteLine($"{rows} linhas afetadas");
         }
 
         static void CreateCategory(SqlConnection connection)
@@ -75,6 +134,18 @@ namespace ProjectDataAccess_Dapper
             {
                 id = new Guid("06D73E6B-315F-4CFC-B462-F643E1A50E97"),
                 title = "Frontend 2022"
+            });
+
+            Console.WriteLine($"{rows} registros atualizados");
+        }
+
+        static void DeleteCategory(SqlConnection connection)
+        {
+            var deleteQuery = "DELETE [CATEGORY] WHERE[Id]=@id";
+
+            var rows = connection.Execute(deleteQuery, new
+            {
+                id = new Guid("06D73E6B-315F-4CFC-B462-F643E1A50E97"),
             });
 
             Console.WriteLine($"{rows} registros atualizados");
