@@ -14,12 +14,14 @@ namespace ProjectDataAccess_Dapper
 
             using (var connection = new SqlConnection(connectionString))
             {
-                ExecuteProcedure(connection);
-                //CreateManyCategory(connection);
-                //DeleteCategory(connection);
-                //UpdateCategory(connection);
-                ListCategories(connection);
-                //CreateCategory(connection);
+                // ExecuteScalar(connection);
+                // ExecuteReadProcedure(connection);
+                // ExecuteProcedure(connection);
+                // CreateManyCategory(connection);
+                // DeleteCategory(connection);
+                // UpdateCategory(connection);
+                // ListCategories(connection);
+                // CreateCategory(connection);
             }
 
         }
@@ -162,6 +164,55 @@ namespace ProjectDataAccess_Dapper
                   commandType: CommandType.StoredProcedure);
 
             Console.WriteLine($"{rows} linhas afetadas");
+        }
+
+        static void ExecuteReadProcedure(SqlConnection connection)
+        {
+            var proc = "[spGetCoursesByCategory]";
+            var pars = new { @CategoryId = "5C349848-E717-9A7D-1241-0E6500000000" };
+            var courses = connection.Query(proc,
+                  pars,
+                  commandType: CommandType.StoredProcedure);
+
+            foreach (var item in courses)
+            {
+                Console.WriteLine(item.Id);
+            }
+        }
+
+        static void ExecuteScalar(SqlConnection connection)
+        {
+            var category = new Category();
+            category.Title = "Mancro Studio";
+            category.Url = "mancro";
+            category.Summary = "Mancro XP";
+            category.Order = 8;
+            category.Description = "Categoria para o Mancro Studio";
+            category.Featured = false;
+
+            var insertSql = @"INSERT INTO 
+                                    [CATEGORY] 
+                             OUTPUT inserted.[Id] 
+                             VALUES(
+                                   NEWID(), 
+                                    @Title, 
+                                    @Url, 
+                                    @Summary,
+                                    @Order,
+                                    @Description,
+                                    @Featured)";
+
+            var id = connection.ExecuteScalar<Guid>(insertSql, new
+            {
+
+                category.Title,
+                category.Url,
+                category.Summary,
+                category.Order,
+                category.Description,
+                category.Featured,
+            });
+            Console.WriteLine($"{id} linhas afetadas");
         }
     }
 
