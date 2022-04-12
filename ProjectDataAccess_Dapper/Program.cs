@@ -8,65 +8,70 @@ using System.Linq;
 
 namespace ProjectDataAccess_Dapper
 {
-    class Program
+  class Program
+  {
+    static void Main(string[] args)
     {
-        static void Main(string[] args)
-        {
-            const string connectionString = @"Server=DESKTOP-6OMQR12\SQLEXPRESS;Database=MXTarget;Integrated Security=True";
+      const string connectionString = @"Server=DESKTOP-6OMQR12\SQLEXPRESS;Database=MXTarget;Integrated Security=True";
 
-            using (var connection = new SqlConnection(connectionString))
-            {
-                // Like(connection, "api");
-                // SelectIn(connection);
-                // QueryMultiple(connection);
-                // OneToMany(connection);
-                // OneToOne(connection);
-                // ReadView(connection);
-                // ExecuteScalar(connection);
-                // ExecuteReadProcedure(connection);
-                // ExecuteProcedure(connection);
-                // CreateManyCategory(connection);
-                // DeleteCategory(connection);
-                // UpdateCategory(connection);
-                // ListCategories(connection);
-                // CreateCategory(connection);
-            }
+      using (var connection = new SqlConnection(connectionString))
+      {
+        // Like(connection, "api");
+        // SelectIn(connection);
+        // QueryMultiple(connection);
+        // OneToMany(connection);
+        // OneToOne(connection);
+        // ReadView(connection);
+        // ExecuteScalar(connection);
+        // ExecuteReadProcedure(connection);
+        // ExecuteProcedure(connection);
+        // CreateManyCategory(connection);
+        // DeleteCategory(connection);
+        // UpdateCategory(connection);
+        ListCategories(connection);
+        // CreateCategory(connection);
+      }
 
-        }
+    }
 
 
-        static void ListCategories(SqlConnection connection)
-        {
-            var categories = connection.Query<Category>("SELECT [Id], [Title] FROM [Category]");
-            foreach (var item in categories)
-            {
-                Console.WriteLine($"{item.Id} - {item.Title}");
-                Console.ReadKey();
-            }
-            Console.ReadKey();
-        }
+    static void ListCategories(SqlConnection connection)
+    {
+      // Usa o generics do C# 
+      var categories = connection.Query<Category>("SELECT [Id], [Title] FROM [Category]");
+      foreach (var item in categories)
+      {
+        Console.WriteLine($"{item.Id} - {item.Title}");
+        Console.ReadKey();
+      }
+      Console.ReadKey();
+    }
 
-        static void CreateManyCategory(SqlConnection connection)
-        {
-            var category1 = new Category();
-            category1.Id = Guid.NewGuid();
-            category1.Title = "Csharp Master";
-            category1.Url = "sharp";
-            category1.Summary = "Sharp pLUS";
-            category1.Order = 8;
-            category1.Description = "Categoria para Csharp Master Plus";
-            category1.Featured = false;
+    static void CreateManyCategory(SqlConnection connection)
+    {
+      var category1 = new Category
+      {
+        Id = Guid.NewGuid(),
+        Title = "Csharp Master",
+        Url = "sharp",
+        Summary = "Sharp pLUS",
+        Order = 8,
+        Description = "Categoria para Csharp Master Plus",
+        Featured = false
+      };
 
-            var category2 = new Category();
-            category2.Id = Guid.NewGuid();
-            category2.Title = "Azure Premium";
-            category2.Url = "azure";
-            category2.Summary = "Azure Cloud Computing";
-            category2.Order = 8;
-            category2.Description = "Categoria para o Azure Premium Cloud";
-            category2.Featured = false;
+      var category2 = new Category
+      {
+        Id = Guid.NewGuid(),
+        Title = "Azure Premium",
+        Url = "azure",
+        Summary = "Azure Cloud Computing",
+        Order = 8,
+        Description = "Categoria para o Azure Premium Cloud",
+        Featured = false
+      };
 
-            var insertSql = @"INSERT INTO 
+      var insertSql = @"INSERT INTO 
                                     [CATEGORY] 
                              VALUES(
                                    @Id, 
@@ -77,9 +82,9 @@ namespace ProjectDataAccess_Dapper
                                     @Description,
                                     @Featured)";
 
-            //Retorna só um int que é a quantidade de linhas afetadas
-            var rows = connection.Execute(insertSql, new[]
-            {
+      //Retorna só um int que é a quantidade de linhas afetadas
+      var rows = connection.Execute(insertSql, new[]
+      {
                 new {
                 category1.Id,
                 category1.Title,
@@ -99,21 +104,23 @@ namespace ProjectDataAccess_Dapper
                 category2.Featured,
             }
             });
-            Console.WriteLine($"{rows} linhas afetadas");
-        }
+      Console.WriteLine($"{rows} linhas afetadas");
+    }
 
-        static void CreateCategory(SqlConnection connection)
-        {
-            var category = new Category();
-            category.Id = Guid.NewGuid();
-            category.Title = "Amazon AWS";
-            category.Url = "amazon";
-            category.Summary = "AWS Cloud";
-            category.Order = 8;
-            category.Description = "Categoria para o AWS";
-            category.Featured = false;
+    static void CreateCategory(SqlConnection connection)
+    {
+      var category = new Category
+      {
+        Id = Guid.NewGuid(),
+        Title = "Amazon AWS",
+        Url = "amazon",
+        Summary = "AWS Cloud",
+        Order = 8,
+        Description = "Categoria para o AWS",
+        Featured = false
+      };
 
-            var insertSql = @"INSERT INTO 
+      var insertSql = @"INSERT INTO 
                                     [CATEGORY] 
                              VALUES(
                                    @Id, 
@@ -124,81 +131,83 @@ namespace ProjectDataAccess_Dapper
                                     @Description,
                                     @Featured)";
 
-            //Retorna só um int que é a quantidade de linhas afetadas
-            var rows = connection.Execute(insertSql, new
-            {
-                category.Id,
-                category.Title,
-                category.Url,
-                category.Summary,
-                category.Order,
-                category.Description,
-                category.Featured,
-            });
-            Console.WriteLine($"{rows} linhas afetadas");
-        }
+      //Retorna só um int que é a quantidade de linhas afetadas
+      var rows = connection.Execute(insertSql, new
+      {
+        category.Id,
+        category.Title,
+        category.Url,
+        category.Summary,
+        category.Order,
+        category.Description,
+        category.Featured,
+      });
+      Console.WriteLine($"{rows} linhas afetadas");
+    }
 
-        static void UpdateCategory(SqlConnection connection)
-        {
-            var updateQuery = "UPDATE [Category] SET [Title]=@title WHERE[Id]=@id";
+    static void UpdateCategory(SqlConnection connection)
+    {
+      var updateQuery = "UPDATE [Category] SET [Title]=@title WHERE[Id]=@id";
 
-            var rows = connection.Execute(updateQuery, new
-            {
-                id = new Guid("06D73E6B-315F-4CFC-B462-F643E1A50E97"),
-                title = "Frontend 2022"
-            });
+      var rows = connection.Execute(updateQuery, new
+      {
+        id = new Guid("06D73E6B-315F-4CFC-B462-F643E1A50E97"),
+        title = "Frontend 2022"
+      });
 
-            Console.WriteLine($"{rows} registros atualizados");
-        }
+      Console.WriteLine($"{rows} registros atualizados");
+    }
 
-        static void DeleteCategory(SqlConnection connection)
-        {
-            var deleteQuery = "DELETE [CATEGORY] WHERE[Id]=@id";
+    static void DeleteCategory(SqlConnection connection)
+    {
+      var deleteQuery = "DELETE [CATEGORY] WHERE[Id]=@id";
 
-            var rows = connection.Execute(deleteQuery, new
-            {
-                id = new Guid("06D73E6B-315F-4CFC-B462-F643E1A50E97"),
-            });
+      var rows = connection.Execute(deleteQuery, new
+      {
+        id = new Guid("06D73E6B-315F-4CFC-B462-F643E1A50E97"),
+      });
 
-            Console.WriteLine($"{rows} registros atualizados");
-        }
+      Console.WriteLine($"{rows} registros atualizados");
+    }
 
-        static void ExecuteProcedure(SqlConnection connection)
-        {
-            var proc = "[spDeleteStudent]";
-            var pars = new { StudentId = "79B82071-80A8-4E78-A79C-92C8CD1FD052" };
-            var rows = connection.Execute(proc,
-                  pars,
-                  commandType: CommandType.StoredProcedure);
+    static void ExecuteProcedure(SqlConnection connection)
+    {
+      var proc = "[spDeleteStudent]";
+      var pars = new { StudentId = "79B82071-80A8-4E78-A79C-92C8CD1FD052" };
+      var rows = connection.Execute(proc,
+            pars,
+            commandType: CommandType.StoredProcedure);
 
-            Console.WriteLine($"{rows} linhas afetadas");
-        }
+      Console.WriteLine($"{rows} linhas afetadas");
+    }
 
-        static void ExecuteReadProcedure(SqlConnection connection)
-        {
-            var proc = "[spGetCoursesByCategory]";
-            var pars = new { @CategoryId = "5C349848-E717-9A7D-1241-0E6500000000" };
-            var courses = connection.Query(proc,
-                  pars,
-                  commandType: CommandType.StoredProcedure);
+    static void ExecuteReadProcedure(SqlConnection connection)
+    {
+      var proc = "[spGetCoursesByCategory]";
+      var pars = new { @CategoryId = "5C349848-E717-9A7D-1241-0E6500000000" };
+      var courses = connection.Query(proc,
+            pars,
+            commandType: CommandType.StoredProcedure);
 
-            foreach (var item in courses)
-            {
-                Console.WriteLine(item.Id);
-            }
-        }
+      foreach (var item in courses)
+      {
+        Console.WriteLine(item.Id);
+      }
+    }
 
-        static void ExecuteScalar(SqlConnection connection)
-        {
-            var category = new Category();
-            category.Title = "Mancro Studio";
-            category.Url = "mancro";
-            category.Summary = "Mancro XP";
-            category.Order = 8;
-            category.Description = "Categoria para o Mancro Studio";
-            category.Featured = false;
+    static void ExecuteScalar(SqlConnection connection)
+    {
+      var category = new Category
+      {
+        Title = "Mancro Studio",
+        Url = "mancro",
+        Summary = "Mancro XP",
+        Order = 8,
+        Description = "Categoria para o Mancro Studio",
+        Featured = false
+      };
 
-            var insertSql = @"INSERT INTO 
+      var insertSql = @"INSERT INTO 
                                     [CATEGORY] 
                              OUTPUT inserted.[Id] 
                              VALUES(
@@ -210,55 +219,55 @@ namespace ProjectDataAccess_Dapper
                                     @Description,
                                     @Featured)";
 
-            var id = connection.ExecuteScalar<Guid>(insertSql, new
-            {
+      var id = connection.ExecuteScalar<Guid>(insertSql, new
+      {
 
-                category.Title,
-                category.Url,
-                category.Summary,
-                category.Order,
-                category.Description,
-                category.Featured,
-            });
-            Console.WriteLine($"{id} linhas afetadas");
-        }
+        category.Title,
+        category.Url,
+        category.Summary,
+        category.Order,
+        category.Description,
+        category.Featured,
+      });
+      Console.WriteLine($"{id} linhas afetadas");
+    }
 
-        static void ReadView(SqlConnection connection)
-        {
-            var sql = "SELECT * FROM [vwCourses]";
-            var courses = connection.Query(sql);
-            foreach (var item in courses)
-            {
-                Console.WriteLine($"{item.Id} - {item.Title}");
-            }
-            Console.ReadKey();
-        }
+    static void ReadView(SqlConnection connection)
+    {
+      var sql = "SELECT * FROM [vwCourses]";
+      var courses = connection.Query(sql);
+      foreach (var item in courses)
+      {
+        Console.WriteLine($"{item.Id} - {item.Title}");
+      }
+      Console.ReadKey();
+    }
 
-        static void OneToOne(SqlConnection connection)
-        {
-            var sql = @"SELECT 
+    static void OneToOne(SqlConnection connection)
+    {
+      var sql = @"SELECT 
                             * 
                         FROM 
                            [CareerItem]
                         INNER JOIN
                            [Course] ON [CareerItem].[CouseId] = [Course].[Id]";
 
-            var items = connection.Query<CareerItem, Course, CareerItem>(sql,
-                (careerItem, course) =>
-                {
-                    careerItem.Course = course;
-                    return careerItem;
-                }, splitOn: "Id");
+      var items = connection.Query<CareerItem, Course, CareerItem>(sql,
+          (careerItem, course) =>
+          {
+            careerItem.Course = course;
+            return careerItem;
+          }, splitOn: "Id");
 
-            foreach (var item in items)
-            {
-                Console.WriteLine($"{item.Title} - Curso: {item.Course.Title}");
-            }
-        }
+      foreach (var item in items)
+      {
+        Console.WriteLine($"{item.Title} - Curso: {item.Course.Title}");
+      }
+    }
 
-        static void OneToMany(SqlConnection connection)
-        {
-            var sql = @"SELECT
+    static void OneToMany(SqlConnection connection)
+    {
+      var sql = @"SELECT
                     [Career].[Id],
                     [Career].[Title],
                     [CareerItem].[CareerId] AS [Id],
@@ -270,105 +279,107 @@ namespace ProjectDataAccess_Dapper
                     ORDER BY 
 	                    [Career].[Title]";
 
-            var careers = new List<Career>();
-            var items = connection.Query<Career, CareerItem, Career>(sql,
-                (career, item) =>
-                {
-                    var car = careers.Where(x => x.Id == career.Id).FirstOrDefault();
-                    if (car == null) // Se não existe na lista 
-                    {
-                        car = career;
-                        car.Items.Add(item);
-                        careers.Add(car);
-                    }
-                    else
-                    {
-                        career.Items.Add(item);
-                    }
-                    return career;
-                }, splitOn: "[CareerId]");
-
-            foreach (var career in careers)
+      var careers = new List<Career>();
+      var items = connection.Query<Career, CareerItem, Career>(sql,
+          (career, item) =>
+          {
+            var car = careers.Where(x => x.Id == career.Id).FirstOrDefault();
+            if (car == null) // Se não existe na lista 
             {
-                Console.WriteLine($"{career.Title}");
-
-                foreach (var item in career.Items)
-                {
-                    Console.WriteLine($" - {item.Title}");
-                }
+              car = career;
+              car.Items.Add(item);
+              careers.Add(car);
             }
-        }
-
-        static void QueryMultiple(SqlConnection connection)
-        {
-            var query = "SELECT * FROM [Category]; SELECT * FROM [Course]";
-
-            using (var mult = connection.QueryMultiple(query))
+            else
             {
-                var categories = mult.Read<Category>();
-                var courses = mult.Read<Course>();
-
-                foreach (var item in categories)
-                {
-                    Console.WriteLine(item.Title);
-                }
-                foreach (var item in courses)
-                {
-                    Console.WriteLine(item.Title);
-                }
+              career.Items.Add(item);
             }
-        }
+            return career;
+          }, splitOn: "[CareerId]");
 
-        static void SelectIn(SqlConnection connection)
+      foreach (var career in careers)
+      {
+        Console.WriteLine($"{career.Title}");
+
+        foreach (var item in career.Items)
         {
-            var query = @"SELECT TOP 10 * FROM Career WHERE [Id] IN @Id";
+          Console.WriteLine($" - {item.Title}");
+        }
+      }
+    }
 
-            var items = connection.Query<Career>(query, new
-            {
-                Id = new[]
+    static void QueryMultiple(SqlConnection connection)
+    {
+      var query = "SELECT * FROM [Category]; SELECT * FROM [Course]";
 
-                 {
+      using (var mult = connection.QueryMultiple(query))
+      {
+        var categories = mult.Read<Category>();
+        var courses = mult.Read<Course>();
+
+        foreach (var item in categories)
+        {
+          Console.WriteLine(item.Title);
+        }
+        foreach (var item in courses)
+        {
+          Console.WriteLine(item.Title);
+        }
+      }
+    }
+
+    static void SelectIn(SqlConnection connection)
+    {
+      var query = @"SELECT TOP 10 * FROM Career WHERE [Id] IN @Id";
+
+      var items = connection.Query<Career>(query, new
+      {
+        Id = new[]
+
+           {
                     "01AE8A85-B4E8-4194-A0F1-1C6190AF54CB",
                     "4327AC7E-963B-4893-9F31-9A3B28A4E72B"
 
                 }
-            });
+      });
 
-            foreach (var item in items)
-            {
-                Console.WriteLine(item.Title);
-                Console.ReadKey();
-            }
-        }
+      foreach (var item in items)
+      {
+        Console.WriteLine(item.Title);
+        Console.ReadKey();
+      }
+    }
 
-        static void Like(SqlConnection connection, string term)
-        {
-            var query = @"SELECT * FROM [Course] WHERE [Title] LIKE @exp";
+    static void Like(SqlConnection connection, string term)
+    {
+      var query = @"SELECT * FROM [Course] WHERE [Title] LIKE @exp";
 
-            var items = connection.Query<Course>(query, new
-            {
-               exp = $"%{term}%"
-            });
+      var items = connection.Query<Course>(query, new
+      {
+        exp = $"%{term}%"
+      });
 
-            foreach (var item in items)
-            {
-                Console.WriteLine(item.Title);
-                Console.ReadKey();
-            }
-        }
+      foreach (var item in items)
+      {
+        Console.WriteLine(item.Title);
+        Console.ReadKey();
+      }
+    }
 
-        static void Transaction(SqlConnection connection)
-        {
-            var category = new Category();
-            category.Id = Guid.NewGuid();
-            category.Title = "Ios as";
-            category.Url = "IosAs";
-            category.Summary = "Ios Cloud";
-            category.Order = 8;
-            category.Description = "Categoria para o iOS";
-            category.Featured = false;
+    static void Transaction(SqlConnection connection)
+    {
+      var category = new Category
+      {
+        Id = Guid.NewGuid(),
+        Title = "Ios as",
+        Url = "IosAs",
+        Summary = "Ios Cloud",
+        Order = 8,
+        Description = "Categoria para o iOS",
+        Featured = false
+      };
 
-            var insertSql = @"INSERT INTO 
+      var insertSql = @"INSERT INTO 
                                     [CATEGORY] 
                              VALUES(
                                    @Id, 
@@ -379,25 +390,25 @@ namespace ProjectDataAccess_Dapper
                                     @Description,
                                     @Featured)";
 
-            using (var transaction = connection.BeginTransaction())
-            {
+      using (var transaction = connection.BeginTransaction())
+      {
 
-                var rows = connection.Execute(insertSql, new
-                {
-                    category.Id,
-                    category.Title,
-                    category.Url,
-                    category.Summary,
-                    category.Order,
-                    category.Description,
-                    category.Featured,
-                }, transaction);
-                //transaction.Commit();
-                transaction.Rollback();
-            Console.WriteLine($"{rows} linhas afetadas");
-            }
-        }
+        var rows = connection.Execute(insertSql, new
+        {
+          category.Id,
+          category.Title,
+          category.Url,
+          category.Summary,
+          category.Order,
+          category.Description,
+          category.Featured,
+        }, transaction);
+        //transaction.Commit();
+        transaction.Rollback();
+        Console.WriteLine($"{rows} linhas afetadas");
+      }
     }
+  }
 
 
 }
